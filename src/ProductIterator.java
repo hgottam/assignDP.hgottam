@@ -2,8 +2,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ProductIterator implements ListIterator {
-    ArrayList<Product> allProductList;
-    static final int maximum_allowed_products=20;
+    //Implementation of Iterator design pattern
+    public ArrayList<Product> allProductList;
+
     static int productPositionIndex=0;
     public ProductIterator(ArrayList<Product> productList) {
         this.allProductList=productList;
@@ -14,8 +15,8 @@ public class ProductIterator implements ListIterator {
         if(productPositionIndex < allProductList.size() &&
                 allProductList.get(productPositionIndex) != null)
             return true;
-        else
-            return false;
+
+         return false;
     }
     public Product Next(){
         Product productName=allProductList.get(productPositionIndex++);
@@ -26,5 +27,12 @@ public class ProductIterator implements ListIterator {
     }
     public void Remove(){
         
+    }
+    public Product getProduct(String productName){
+        for(int i=0;i<allProductList.size();i++){
+            if(allProductList.get(i).currentProductName.equals(productName))
+                return allProductList.get(i);
+        }
+        return null;
     }
 }

@@ -11,12 +11,18 @@ public class ProduceProductMenu implements ProductMenu{
                 System.out.println(product.currentProductName);
             }
         }
+        //Add button to add the product to trade
+        //For simplicity accepting the trade
     }
     public void showAddButton(){
-
+        Facade facade=new Facade();
+        //Product Menu: Method to add functionality for adding trading
+        facade.addTrading();
     }
     public void showViewButton(){
-
+        Facade facade=new Facade();
+        //Product Menu: Method to add functionality to view the trades
+        facade.viewTrading();
     }
     public void showRadioButton(){
 

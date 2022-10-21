@@ -8,16 +8,39 @@ class Facade{
     private ClassProductList theProductList;
     private Person thePerson;
 
-    public HashMap<String,String> login(){
+    public ArrayList<String> login(){
+        //This method delegates all login required validations to Login class.
         Login login=new Login();
-        HashMap<String,String> hm=login.login(UserType,thePerson);
-        return hm;
+             return login.login();
     }
-    public void addTrading(){
+    public Person getPerson(){
+        return thePerson;
+    }
+    public void setPerson(Person person){
+        Person o=person;
+        this.thePerson=o;
+    }
+    public Person getUserType(){
+        return thePerson;
+    }
+    public void setUserType(int userType){
+        this.UserType=userType;
+    }
 
+    public void addTrading(){
+        //Facade: Method that gives information about adding a trade for the product.
+        Trading trading=new Trading();
+        trading.addTrading();
+        //Implementing visitor pattern to visit all the tradings and
+        // accept a trade or remind that the trade is ending.
+        ReminderVisitor rv= new ReminderVisitor();
+        rv.visitTrading(trading);
     }
     public void viewTrading(){
-
+        //Facade: Method that gives information about the trading.
+        // Calls BuyerTradingMenu/SellerTradingMenu based on the user"
+        TradingMenu tradingMenu=new TradingMenu();
+        tradingMenu.showTradingMenu(UserType);
     }
     public void decideBidding(){
 
@@ -29,51 +52,71 @@ class Facade{
 
     }
     public void remind(){
-
+        //From ReminderVisitor function
+        System.out.println("Remind function to remind users about the trade");
     }
     public void createUser(UserInfoItem userinfoitem){
-
     }
     public void createProductList(){
-        String inputProductFile = "./src/ProductInfo.txt";
-        FileReader productInfoFile;
-        String[] productList = new String[15];
-        int i = 0;
+        //This method creates a list of all products that are present in the ProductInfo.txt file
         try {
-            productInfoFile = new FileReader(inputProductFile);
-            BufferedReader readProductInfo = new BufferedReader(productInfoFile);
+            String inputProductFile= "./src/ProductInfo.txt";
+            FileReader userProductFile = new FileReader(inputProductFile);
+            BufferedReader readProductInfo = new BufferedReader(userProductFile);
             String product = readProductInfo.readLine();
-            if( ClassProductList.allProducts==null)
-                ClassProductList.allProducts= new ArrayList<>();
-            do {
+            if(ClassProductList.allProducts==null)
+                ClassProductList.allProducts=new ArrayList<>();
+            do{
                 if (product == null)
                     break;
-                //create product object instead of productlist
-                String[] productValues=product.split(":");
-                Product p=new Product(productValues[0],productValues[1]);
-                System.out.println( productValues[0]+" "+productValues[1]);
+                String[] values=product.split(":");
+                Product p=new Product(values[0],values[1]);
                 ClassProductList.allProducts.add(p);
-                productList[i++] = product;
                 product = readProductInfo.readLine();
             } while (true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        ProductIterator productIterator = getProductIterator(productList);
-//        do {
-//            if (!productIterator.hasNext())
-//                break;
-//            for (Map.Entry<Integer, String> entry : productIterator.next().entrySet()) {
-//                Integer key = entry.getKey();
-//                String value = entry.getValue();
-//                System.out.println(" " + key + " : " + value);
-//            }
-//        } while (true);
     }
     public void AttachProductToUser() {
+        //This method reads UserProduct.txt file and attaches products that are associated with the user.
+        //if the user is a new user a new product list if created and attached to the user.
+       HashMap<String,Person>hm= UserInfoItem.userInfo;
+        try {
+            String inputProductFile= "./src/UserProduct.txt";
+            FileReader userProductFile = new FileReader(inputProductFile);
+            BufferedReader readProductInfo = new BufferedReader(userProductFile);
+            String line = readProductInfo.readLine();
+            do{
+                if (line == null)
+                    break;
+                String[] values=line.split(":");
+                String personName=values[0];
+                String productName=values[1];
+                Product product=null;
+                for(int i=0;i<ClassProductList.allProducts.size();i++){
+                    if(ClassProductList.allProducts.get(i).currentProductName.equals(productName))
+                        product= ClassProductList.allProducts.get(i);
+                }
+
+                if(hm.containsKey(personName)){
+                    Person p=hm.get(personName);
+                    if(p.personProductList==null) {
+                        p.personProductList = new ArrayList<>();
+                        p.personProductList.add(product);
+                    }
+                    else
+                        p.personProductList.add(product);
+                }
+                line = readProductInfo.readLine();
+            } while (true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     public Product SelectProduct(){
-
+        //Method to return current selected Product
+        System.out.println("Return current product");
         return new Product(null,null);
     }
     public void productOperation(){

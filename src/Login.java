@@ -1,13 +1,19 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
 public class Login extends Facade{
-    public HashMap<String, String> login(int UserType, Person thePerson){
-        String loginStatus = "false";
-        HashMap<String,String> hm=new HashMap<>();
+    public ArrayList<String> login(){
+        //This method returns an arraylist with logged-in username and type of the user(0-buyer, 1-seller)
+        // and also check if the logged-in user is already existing in the file.
+        // The Method iterates through sellerInfo.txt and buyerInfo.txt files to identify the user and validates the person.
+        boolean loginStatus = false;
+        Facade facade=new Facade();
+        ArrayList<String> al=new ArrayList<>();
+        String userType="";
         try {
             System.out.println("Enter Username");
             @SuppressWarnings("resource")
@@ -17,46 +23,45 @@ public class Login extends Facade{
             String inputPassword = sc.nextLine();
             boolean status = loginCheck("./src/SellerInfo.txt", inputUsername, inputPassword);
             if(status) {
-                System.out.println("Logged in as seller!");
-                loginStatus = "true";
-                UserType = 1;
-                Seller seller=new Seller();
-                seller.personName=inputUsername;
-                hm.put("PersonName", seller.personName);
+                System.out.println("Current usertype: Seller");
+                loginStatus = true;
+                userType="1";
             }
             else{
                 boolean buyStatus = loginCheck("./src/BuyerInfo.txt", inputUsername, inputPassword);
                 if (!buyStatus) {
-                    throw new Exception("Invalid!");
+                    al.clear();
+                    System.out.println("Invalid!");
+                    login();
                 } else {
-                    System.out.println("Logged in as Buyer!");
-                    if (buyStatus) loginStatus = "true";
-                    else loginStatus = "false";
-                    UserType = 0;
-                    Buyer buyer=new Buyer();
-                    buyer.personName=inputUsername;
-                    hm.put("PersonName", buyer.personName);
+                    System.out.println("Current usertype: Buyer");
+                    if (buyStatus) loginStatus = true;
+                    else loginStatus = false;
+                    userType="0";
                 }
             }
+            al.add(userType);
+            al.add(inputUsername);
         }catch(Exception e) {
             System.out.println(e.getMessage());
-            login(UserType, thePerson);
+            login();
         }
-        hm.put("loginStatus",loginStatus);
 
-        return hm;
+        return al;
     }
-    private boolean isLoginStatus(boolean loginStatus, boolean checkPassword) {
+    private boolean LoginStatus(boolean loginStatus, boolean checkPassword) {
+        //this method checks if login is valid or invalid.
         if (!checkPassword) {
             System.out.println("Invalid Username/Password");
             login();
         } else {
-            System.out.println("Login success");
+            System.out.println("Login successful");
             loginStatus = true;
         }
         return loginStatus;
     }
     public boolean loginCheck(String inputFileType, String inputUsername, String inputPassword) {
+        //Method used by the login() for validation based on file.
         boolean loginStatus = false;
         try {
             boolean found = false;
@@ -66,14 +71,14 @@ public class Login extends Facade{
             String creds = bufferedReader.readLine();
             while (true) {
                 if (creds == null) break;
-                String username = getString(creds);
+                String username =creds.substring(0, creds.indexOf(":"));
                 if (!isEqualsIgnoreCase(inputUsername, username)) {
                 } else {
                     found = true;
                     boolean checkPassword = isPassword(inputPassword, creds);
-                    loginStatus = isLoginStatus(loginStatus, checkPassword);
+                    loginStatus = LoginStatus(loginStatus, checkPassword);
                 }
-                creds = getBufferedReader(bufferedReader).readLine();
+                creds = bufferedReader.readLine();
             }
             if (found) {
             } else {
@@ -86,8 +91,8 @@ public class Login extends Facade{
         return loginStatus;
     }
     private boolean isPassword(String inputPassword, String creds) {
-        String password = getPassword(creds);
-        boolean checkPassword = isCheckPassword(inputPassword, password);
+        String password = creds.substring(creds.lastIndexOf(":") + 1);
+        boolean checkPassword = inputPassword.equals(password);
         return checkPassword;
     }
 
@@ -95,22 +100,5 @@ public class Login extends Facade{
         return username.equalsIgnoreCase(inputUsername);
     }
 
-    private BufferedReader getBufferedReader(BufferedReader bufferedReader) {
-        return bufferedReader;
-    }
 
-    private boolean isCheckPassword(String inputPassword, String password) {
-        boolean checkPassword = inputPassword.equals(password);
-        return checkPassword;
-    }
-
-    private String getPassword(String creds) {
-        String password = creds.substring(creds.lastIndexOf(":") + 1);
-        return password;
-    }
-
-    private String getString(String creds) {
-        String username = creds.substring(0, creds.indexOf(":"));
-        return username;
-    }
 }
